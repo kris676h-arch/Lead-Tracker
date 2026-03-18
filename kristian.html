@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House Nordic – Kristian</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0; --surface: #FFFFFF; --border: #E2DED8; --border-strong: #C8C3BB;
+    --text: #1A1814; --text-muted: #7A7570; --text-faint: #B0ABA5;
+    --accent: #2C3E50; --accent-light: #E8ECF0;
+    --green: #1B6B45; --green-bg: #E8F5EE; --amber: #8B5E0A; --amber-bg: #FEF3DA;
+    --red: #8B1A1A; --red-bg: #FDEAEA; --purple: #4A2D8B; --purple-bg: #EDE8F8;
+    --blue: #1A3F6B; --blue-bg: #E8EFF8; --radius: 8px; --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "DM Sans", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+  .header { background: var(--accent); color: white; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; text-decoration: none; color: white; display: flex; align-items: center; gap: 0; }
+  .header-logo span { opacity: 0.5; margin: 0 8px; }
+  .header-saved { font-size: 12px; opacity: 0.6; }
+  .main { padding: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-bottom: 0; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; }
+  .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.03em; margin-bottom: 4px; }
+  .stat-val { font-size: 26px; font-weight: 300; line-height: 1; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; flex: 1; flex-wrap: wrap; }
+  .toolbar-right { display: flex; gap: 8px; }
+  input[type=search], select.filter-sel { font-family: "DM Sans", sans-serif; font-size: 13px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+  input[type=search] { width: 200px; }
+  button.btn { font-family: "DM Sans", sans-serif; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); transition: background 0.15s; white-space: nowrap; }
+  button.btn:hover { background: var(--bg); }
+  button.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.btn-primary:hover { background: #1a252f; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: var(--accent); color: rgba(255,255,255,0.85); font-size: 10.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 6px; text-align: left; white-space: nowrap; cursor: pointer; user-select: none; border-right: 1px solid rgba(255,255,255,0.08); }
+  thead th:last-child { border-right: none; }
+  thead th:hover { background: #3d5166; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #FAFAF8; }
+  tbody tr:nth-child(even) { background: #FDFCFA; }
+  td { padding: 6px 6px; vertical-align: middle; }
+  td input[type=text], td input[type=email] { font-family: "DM Sans", sans-serif; font-size: 12px; width: 100%; padding: 4px 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text); }
+  td input:hover { border-color: var(--border); background: var(--bg); }
+  td input:focus { border-color: var(--accent); background: var(--surface); outline: none; }
+  td select.status-sel { font-family: "DM Sans", sans-serif; font-size: 11px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); color: var(--text); cursor: pointer; width: 100%; }
+  .date-cell { font-family: "DM Mono", monospace; font-size: 11px; color: var(--text-muted); }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--text-faint); font-size: 16px; padding: 2px 5px; border-radius: 4px; transition: all 0.15s; }
+  .del-btn:hover { color: var(--red); background: var(--red-bg); }
+  .btn-sm { font-size: 11px !important; padding: 4px 9px !important; border-radius: 5px !important; }
+  .sort-icon { font-size: 10px; opacity: 0.7; margin-left: 2px; }
+  .empty-row td { text-align: center; padding: 40px; color: var(--text-faint); font-size: 13px; }
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; width: 480px; max-width: 95vw; border: 1px solid var(--border); }
+  .modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+  .modal textarea { font-family: "DM Sans", sans-serif; font-size: 13px; width: 100%; height: 120px; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px; resize: vertical; background: var(--bg); color: var(--text); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .lock-screen { position: fixed; inset: 0; background: #F7F5F0; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .lock-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 48px; width: 360px; text-align: center; }
+  .lock-logo { font-size: 15px; font-weight: 500; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
+  .lock-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+  .lock-input { width: 100%; font-family: "DM Mono", monospace; font-size: 18px; letter-spacing: 0.15em; text-align: center; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); margin-bottom: 12px; }
+  .lock-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .lock-btn { width: 100%; font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 500; padding: 11px; border-radius: var(--radius); background: var(--accent); color: white; border: none; cursor: pointer; }
+  .lock-btn:hover { background: #1a252f; }
+  .lock-error { font-size: 12px; color: var(--red); min-height: 18px; margin-top: 8px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div style="font-size:32px;margin-bottom:16px;">🔒</div>
+    <div class="lock-logo">House Nordic</div>
+    <div class="lock-sub">Kristian &mdash; Indtast adgangskode</div>
+    <input type="password" class="lock-input" id="lock-input" placeholder="&#9679;&#9679;&#9679;&#9679;" maxlength="20" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <button class="lock-btn" onclick="checkPassword()">Lås op</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<header class="header">
+  <a href="index.html" class="header-logo">House Nordic <span>|</span> Kristian</a>
+  <div class="header-saved" id="save-indicator"></div>
+</header>
+
+<div class="main">
+  <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;margin-bottom:24px;">
+    <div class="stats" id="stats-row"></div>
+    <div style="display:flex;gap:12px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;min-width:200px;max-width:230px;">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:12px;">LEAD / KUNDE</div>
+        <canvas id="type-chart" width="190" height="190"></canvas>
+        <div id="type-legend" style="margin-top:12px;"></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;min-width:200px;max-width:230px;">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:12px;">LEAD STATUS</div>
+        <canvas id="status-chart" width="190" height="190"></canvas>
+        <div id="chart-legend" style="margin-top:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button class="btn btn-primary" onclick="addRow()" id="add-btn">+ Nyt lead</button>
+      <input type="search" id="search-input" placeholder="Søg..." oninput="renderTable()" />
+      <select class="filter-sel" id="filter-type" onchange="renderTable()">
+        <option value="">Lead &amp; Kunde</option>
+        <option>Lead</option>
+        <option>Kunde</option>
+      </select>
+      <select class="filter-sel" id="filter-status" onchange="renderTable()">
+        <option value="">Alle statusser</option>
+        <option>Afventer svar</option>
+        <option>Tilbud accepteret</option>
+        <option>Opfølgning</option>
+        <option>Afvist</option>
+      </select>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn" onclick="exportCSV()">CSV</button>
+      <button class="btn" onclick="exportExcel()">Excel</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28px;">#</th>
+          <th onclick="toggleSort('company')" style="min-width:100px;">Virksomhed<span class="sort-icon" id="sort-company"></span></th>
+          <th onclick="toggleSort('contact')" style="min-width:90px;">Kontaktperson<span class="sort-icon" id="sort-contact"></span></th>
+          <th onclick="toggleSort('title')" style="min-width:85px;">Stilling<span class="sort-icon" id="sort-title"></span></th>
+          <th onclick="toggleSort('email')" style="min-width:130px;">Email<span class="sort-icon" id="sort-email"></span></th>
+          <th onclick="toggleSort('country')" style="min-width:70px;">Land<span class="sort-icon" id="sort-country"></span></th>
+          <th onclick="toggleSort('stores')" style="min-width:55px;">Butikker<span class="sort-icon" id="sort-stores"></span></th>
+          <th onclick="toggleSort('revenue')" style="min-width:100px;">Omsætning<span class="sort-icon" id="sort-revenue"></span></th>
+          <th onclick="toggleSort('fair')" style="min-width:90px;">Messe<span class="sort-icon" id="sort-fair"></span></th>
+          <th onclick="toggleSort('season')" style="min-width:80px;">Sæson<span class="sort-icon" id="sort-season"></span></th>
+          <th onclick="toggleSort('offer')" style="min-width:130px;">Tilbud sendt<span class="sort-icon" id="sort-offer"></span></th>
+          <th onclick="toggleSort('contacted')" style="min-width:80px;">Kontaktet<span class="sort-icon" id="sort-contacted"></span></th>
+          <th style="min-width:80px;">Type</th>
+          <th style="min-width:100px;">Status</th>
+          <th style="min-width:45px;">Noter</th>
+          <th style="width:28px;"></th>
+        </tr>
+      </thead>
+      <tbody id="leads-body"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:10px;font-size:11.5px;color:var(--text-muted);min-height:18px;" id="statusbar"></div>
+</div>
+
+<div class="modal-bg" id="notes-modal">
+  <div class="modal">
+    <h3>Noter</h3>
+    <textarea id="notes-textarea" placeholder="Skriv noter om dette lead..."></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeNotes()">Annuller</button>
+      <button class="btn btn-primary" onclick="saveNotes()">Gem</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const PERSON = "Kristian";
+const PASSWORD = "2035";
+const SESSION_KEY = "hn_s_kristian";
+
+
+const SUPABASE_URL = "https://vjnyxxgialsbicjxzylu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnl4eGdpYWxzYmljanh6eWx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDY0NzEsImV4cCI6MjA4OTQyMjQ3MX0.DuOgdXZMexkC7tU2nfGbTXuTY6e6wTEkttSORdI_ZgQ";
+
+async function sbFetch(method, path, body) {
+  const opts = {
+    method,
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": method === "POST" ? "return=representation" : ""
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SUPABASE_URL + path, opts);
+  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  const txt = await r.text();
+  return txt ? JSON.parse(txt) : [];
+}
+
+async function loadLeads(person) {
+  return await sbFetch("GET", `/rest/v1/leads?person=eq.${encodeURIComponent(person)}&order=created_at.asc&select=*`, null);
+}
+
+async function insertLead(lead) {
+  const res = await sbFetch("POST", "/rest/v1/leads", lead);
+  return res[0];
+}
+
+async function updateLead(id, fields) {
+  return await sbFetch("PATCH", `/rest/v1/leads?id=eq.${id}`, fields);
+}
+
+async function deleteLead(id) {
+  return await sbFetch("DELETE", `/rest/v1/leads?id=eq.${id}`, null);
+}
+
+
+let leads = [];
+let sortCol = null, sortDir = "desc";
+let notesEditIndex = null;
+let pieChart = null, typeChart = null;
+
+function uid() { return Math.random().toString(36).slice(2,10); }
+function today() { return new Date().toLocaleDateString("da-DK",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+function setMsg(m) { document.getElementById("statusbar").textContent = m; }
+function showSaved() { const i=document.getElementById("save-indicator"); i.textContent="Gemt"; setTimeout(()=>i.textContent="",1500); }
+
+function checkPassword() {
+  if (document.getElementById("lock-input").value === PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, "true");
+    document.getElementById("lock-screen").style.display = "none";
+    init();
+  } else {
+    document.getElementById("lock-error").textContent = "Forkert adgangskode.";
+    document.getElementById("lock-input").value = "";
+    document.getElementById("lock-input").focus();
+  }
+}
+
+async function init() {
+  setMsg("Henter leads...");
+  try {
+    leads = await sbFetch("GET", "/rest/v1/leads?person=eq." + encodeURIComponent(PERSON) + "&order=created_at.asc&select=*", null);
+    setMsg("");
+  } catch(e) { setMsg("Fejl: " + e.message); }
+  renderStats();
+  renderTable();
+}
+
+function parseRev(raw) {
+  if (!raw) return -1;
+  const n = parseFloat(raw.toString().replace(/~/g,"").replace(/\./g,"").replace(/,/g,".").replace(/[^0-9.]/g,""));
+  return isNaN(n) ? -1 : n;
+}
+
+function formatRevenue(raw) {
+  if (!raw) return "";
+  const n = parseRev(raw);
+  if (n < 0) return raw;
+  if (n >= 1000000000) return "~"+(n/1000000000).toFixed(1).replace(/\.0$/,"")+" mia.";
+  if (n >= 1000000) return "~"+(n/1000000).toFixed(1).replace(/\.0$/,"")+" mio.";
+  if (n >= 1000) return "~"+(n/1000).toFixed(0)+" t.";
+  return "~"+n.toFixed(0);
+}
+
+function makePie(canvasId, legendId, labels, data, colors) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+  const total = data.reduce((s,v)=>s+v,0);
+  if (total === 0) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#E2DED8"; ctx.beginPath(); ctx.arc(95,95,80,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle="#FFFFFF"; ctx.beginPath(); ctx.arc(95,95,48,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle="#B0ABA5"; ctx.font="11px DM Sans,sans-serif"; ctx.textAlign="center";
+    ctx.fillText("Ingen data",95,99);
+    document.getElementById(legendId).innerHTML=""; return null;
+  }
+  const chart = new Chart(canvas, {
+    type:"pie",
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:"#FFFFFF" }] },
+    options:{ cutout:"0%", plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>" "+c.label+": "+c.raw+" ("+Math.round(c.raw/total*100)+"%)" } } }, animation:{duration:300} }
+  });
+  document.getElementById(legendId).innerHTML = labels.map((l,i) =>
+    data[i]>0 ? `<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></div><span style="font-size:11px;color:var(--text-muted);">${l}</span><span style="font-size:11px;font-weight:500;margin-left:auto;">${data[i]}</span></div>` : ""
+  ).join("");
+  return chart;
+}
+
+function renderStats() {
+  const t=leads.length, lc=leads.filter(l=>(l.type||"Lead")==="Lead").length;
+  const cc=leads.filter(l=>l.type==="Kunde").length, p=leads.filter(l=>l.status==="Afventer svar").length;
+  const a=leads.filter(l=>l.status==="Tilbud accepteret").length, f=leads.filter(l=>l.status==="Opfølgning").length;
+  document.getElementById("stats-row").innerHTML =
+    `<div class="stat"><div class="stat-label">I alt</div><div class="stat-val">${t}</div></div>
+     <div class="stat"><div class="stat-label">Leads</div><div class="stat-val">${lc}</div></div>
+     <div class="stat"><div class="stat-label">Kunder</div><div class="stat-val">${cc}</div></div>
+     <div class="stat"><div class="stat-label">Afventer svar</div><div class="stat-val">${p}</div></div>
+     <div class="stat"><div class="stat-label">Opfølgning</div><div class="stat-val">${f}</div></div>`;
+  if (typeChart) { typeChart.destroy(); typeChart=null; }
+  if (pieChart)  { pieChart.destroy();  pieChart=null; }
+  typeChart = makePie("type-chart","type-legend",["Lead","Kunde"],[lc,cc],["#AFA9EC","#378ADD"]);
+  pieChart  = makePie("status-chart","chart-legend",["Afventer svar","Tilbud accepteret","Opfølgning","Afvist"],[p,a,f,leads.filter(l=>l.status==="Afvist").length],["#EF9F27","#5DCAA5","#F0997B","#B4B2A9"]);
+}
+
+function toggleSort(col) {
+  sortCol===col ? sortDir=sortDir==="desc"?"asc":"desc" : (sortCol=col,sortDir="desc");
+  document.querySelectorAll(".sort-icon").forEach(e=>e.textContent="");
+  const ic=document.getElementById("sort-"+col); if(ic) ic.textContent=sortDir==="desc"?" ▼":" ▲";
+  renderTable();
+}
+
+function filtered() {
+  const q=document.getElementById("search-input").value.toLowerCase();
+  const ft=document.getElementById("filter-type").value;
+  const fs=document.getElementById("filter-status").value;
+  let r=leads.filter(l=>{
+    const m=!q||[l.company,l.contact,l.title,l.email,l.country,l.offer].some(f=>(f||"").toLowerCase().includes(q));
+    return m&&(!ft||(l.type||"Lead")===ft)&&(!fs||l.status===fs);
+  });
+  if (sortCol) r=r.slice().sort((a,b)=>{
+    let av=a[sortCol]||"",bv=b[sortCol]||"";
+    if(sortCol==="revenue"||sortCol==="stores"){ av=parseRev(av);bv=parseRev(bv); return sortDir==="desc"?bv-av:av-bv; }
+    av=av.toString().toLowerCase();bv=bv.toString().toLowerCase();
+    return sortDir==="desc"?bv.localeCompare(av,"da"):av.localeCompare(bv,"da");
+  });
+  return r;
+}
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+
+function renderTable() {
+  const rows=filtered(), tbody=document.getElementById("leads-body");
+  if (!rows.length) { tbody.innerHTML=`<tr class="empty-row"><td colspan="16">Ingen leads endnu. Klik "+ Nyt lead" for at komme i gang.</td></tr>`; return; }
+  tbody.innerHTML="";
+  rows.forEach((lead,vi)=>{
+    const ri=leads.indexOf(lead);
+    const hasNotes=lead.notes&&lead.notes.trim().length>0;
+    const fmtRev=formatRevenue(lead.revenue);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td style="color:var(--text-faint);text-align:center;font-size:11px;">${vi+1}</td>
+      <td><input type="text" value="${esc(lead.company)}" placeholder="Virksomhedsnavn" onchange="updateField(${ri},'company',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.contact)}" placeholder="Fuldt navn" onchange="updateField(${ri},'contact',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.title||'')}" placeholder="Fx Indkøbschef" onchange="updateField(${ri},'title',this.value)" /></td>
+      <td><input type="email" value="${esc(lead.email)}" placeholder="email@firma.com" onchange="updateField(${ri},'email',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.country||'')}" placeholder="Land" onchange="updateField(${ri},'country',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.stores||'')}" placeholder="Antal" onchange="updateField(${ri},'stores',this.value)" /></td>
+      <td style="cursor:pointer;" onclick="var inp=this.querySelector('input');var disp=this.querySelector('.rev-disp');inp.style.display='block';disp.style.display='none';inp.focus();">
+        <div class="rev-disp" style="font-size:12px;color:var(--text-muted);padding:3px 6px;">${fmtRev||'<span style=&quot;color:var(--text-faint)&quot;>Indtast...</span>'}</div>
+        <input type="text" value="${esc(lead.revenue||'')}" placeholder="F.eks. 500000" style="display:none;" onchange="updateField(${ri},'revenue',this.value)" onblur="this.style.display='none';this.previousElementSibling.style.display='block';this.previousElementSibling.innerHTML=this.value?formatRevenue(this.value):'<span style=&quot;color:var(--text-faint)&quot;>Indtast...</span>';" />
+      </td>
+      <td><input type="text" value="${esc(lead.fair||'')}" placeholder="Fx Maison 2026" onchange="updateField(${ri},'fair',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.season||'')}" placeholder="Fx SS26" onchange="updateField(${ri},'season',this.value)" /></td>
+      <td><input type="text" value="${esc(lead.offer||'')}" placeholder="F.eks. SS26 Wholesale Offer" onchange="updateField(${ri},'offer',this.value)" /></td>
+      <td>
+        <input type="text" value="${esc(lead.contacted||'')}" placeholder="${today()}" class="date-cell"
+          onfocus="if(!this.value){this.value='${today()}';updateField(${ri},'contacted','${today()}');}"
+          onchange="updateField(${ri},'contacted',this.value)" style="width:90px;" />
+      </td>
+      <td>
+        <select class="status-sel" onchange="updateField(${ri},'type',this.value);renderTable();" style="font-weight:500;${(lead.type||'Lead')==='Kunde'?'background:#E8EFF8;color:#1A3F6B;':'background:#EDE8F8;color:#4A2D8B;'}">
+          ${["Lead","Kunde"].map(s=>`<option ${(lead.type||'Lead')===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </td>
+      <td>
+        <select class="status-sel" onchange="updateField(${ri},'status',this.value);renderStats();">
+          ${["Afventer svar","Tilbud accepteret","Opfølgning","Afvist"].map(s=>`<option ${lead.status===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </td>
+      <td style="text-align:center;">
+        <button class="btn btn-sm" onclick="openNotes(${ri})" style="${hasNotes?"background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bg);":""}">
+          ${hasNotes?"Se":"Tilf&#248;j"}
+        </button>
+      </td>
+      <td><button class="del-btn" onclick="deleteRow(${ri})" title="Slet">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function updateField(i, field, val) {
+  leads[i][field] = val;
+  try {
+    await sbFetch("PATCH", "/rest/v1/leads?id=eq." + leads[i].id, {[field]: val});
+    showSaved();
+  } catch(e) { setMsg("Fejl ved gem: " + e.message); }
+}
+
+async function addRow() {
+  const btn = document.getElementById("add-btn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Gemmer...';
+  const newLead = { person:PERSON, company:"", contact:"", title:"", email:"", country:"", stores:"", revenue:"", fair:"", season:"", offer:"", contacted:"", type:"Lead", status:"Afventer svar", notes:"" };
+  try {
+    const res = await sbFetch("POST", "/rest/v1/leads", [newLead]);
+    const saved = Array.isArray(res) ? res[0] : res;
+    leads.push(saved);
+    renderStats(); renderTable();
+    setTimeout(() => {
+      const inputs = document.querySelectorAll("#leads-body td input[type=text]");
+      if (inputs.length) inputs[inputs.length - 10].focus();
+    }, 100);
+    setMsg("Lead oprettet.");
+  } catch(e) {
+    setMsg("Fejl ved oprettelse: " + e.message);
+  }
+  btn.disabled=false; btn.innerHTML="+ Nyt lead";
+}
+
+async function deleteRow(i) {
+  if (!confirm(`Slet "${leads[i].company||"dette lead"}"?`)) return;
+  try {
+    await sbFetch("DELETE", "/rest/v1/leads?id=eq." + leads[i].id, null);
+    leads.splice(i,1);
+    renderStats(); renderTable();
+    setMsg("Lead slettet.");
+  } catch(e) { setMsg("Fejl: " + e.message); }
+}
+
+function openNotes(i) {
+  notesEditIndex=i;
+  document.getElementById("notes-textarea").value=leads[i].notes||"";
+  document.getElementById("notes-modal").classList.add("open");
+  document.getElementById("notes-textarea").focus();
+}
+function closeNotes() { document.getElementById("notes-modal").classList.remove("open"); notesEditIndex=null; }
+async function saveNotes() {
+  if (notesEditIndex===null) return;
+  leads[notesEditIndex].notes=document.getElementById("notes-textarea").value;
+  await sbFetch("PATCH", "/rest/v1/leads?id=eq." + leads[notesEditIndex].id, {notes: leads[notesEditIndex].notes});
+  showSaved(); renderTable(); closeNotes();
+}
+document.getElementById("notes-modal").addEventListener("click",function(e){ if(e.target===this)closeNotes(); });
+
+function toggleSort(col) {
+  sortCol===col ? sortDir=sortDir==="desc"?"asc":"desc" : (sortCol=col,sortDir="desc");
+  document.querySelectorAll(".sort-icon").forEach(e=>e.textContent="");
+  const ic=document.getElementById("sort-"+col); if(ic) ic.textContent=sortDir==="desc"?" ▼":" ▲";
+  renderTable();
+}
+
+function exportCSV() {
+  const hdr=["Virksomhed","Kontaktperson","Stilling","Email","Land","Butikker","Omsætning","Messe","Sæson","Tilbud sendt","Kontaktet","Type","Status","Noter"];
+  const rows=leads.map(l=>[l.company,l.contact,l.title||"",l.email,l.country,l.stores,l.revenue,l.fair||"",l.season||"",l.offer,l.contacted,l.type||"Lead",l.status,l.notes||""].map(v=>`"${(v||"").replace(/"/g,'""')}"`).join(","));
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["\uFEFF"+[hdr.join(","),...rows].join("\n"),{type:"text/csv;charset=utf-8;"}])); a.download="HN_Leads_kristian.csv"; a.click();
+}
+
+function exportExcel() {
+  const hdr=["Virksomhed","Kontaktperson","Stilling","Email","Land","Butikker","Omsætning","Messe","Sæson","Tilbud sendt","Kontaktet","Type","Status","Noter"];
+  const rows=leads.map(l=>[l.company,l.contact,l.title||"",l.email,l.country,l.stores,l.revenue,l.fair||"",l.season||"",l.offer,l.contacted,l.type||"Lead",l.status,l.notes||""]);
+  const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
+  ws["!cols"]=[24,18,16,28,12,10,14,14,10,24,12,10,16,28].map(w=>({'wch':w}));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Leads");
+  XLSX.writeFile(wb,"HN_Leads_kristian.xlsx");
+}
+
+if (sessionStorage.getItem(SESSION_KEY)==="true") {
+  document.getElementById("lock-screen").style.display="none";
+  init();
+} else {
+  setTimeout(()=>document.getElementById("lock-input").focus(),100);
+}
+</script>
+</body>
+</html>
