@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House Nordic – Samlet oversigt</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0; --surface: #FFFFFF; --border: #E2DED8; --border-strong: #C8C3BB;
+    --text: #1A1814; --text-muted: #7A7570; --text-faint: #B0ABA5;
+    --accent: #2C3E50; --radius: 8px; --radius-lg: 12px;
+    --green: #1B6B45; --green-bg: #E8F5EE; --amber: #8B5E0A; --amber-bg: #FEF3DA;
+    --red: #8B1A1A; --red-bg: #FDEAEA; --purple: #4A2D8B; --purple-bg: #EDE8F8;
+    --blue: #1A3F6B; --blue-bg: #E8EFF8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "DM Sans", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+  .header { background: var(--accent); color: white; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; text-decoration: none; color: white; display: flex; align-items: center; }
+  .header-logo span { opacity: 0.5; margin: 0 8px; }
+  .main { padding: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; }
+  .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.03em; margin-bottom: 4px; }
+  .stat-val { font-size: 26px; font-weight: 300; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  input[type=search], select.filter-sel {
+    font-family: "DM Sans", sans-serif; font-size: 13px; padding: 8px 12px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+  }
+  input[type=search] { width: 220px; }
+  button.btn { font-family: "DM Sans", sans-serif; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); white-space: nowrap; }
+  button.btn:hover { background: var(--bg); }
+  button.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.btn-primary:hover { background: #1a252f; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: var(--accent); color: rgba(255,255,255,0.85); font-size: 10.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 8px; text-align: left; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: #3d5166; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #FAFAF8; }
+  tbody tr:nth-child(even) { background: #FDFCFA; }
+  tbody tr:nth-child(even):hover { background: #F7F6F3; }
+  td { padding: 7px 8px; vertical-align: middle; font-size: 12px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 99px; }
+  .b-lead { background: var(--purple-bg); color: var(--purple); }
+  .b-kunde { background: var(--blue-bg); color: var(--blue); }
+  .b-wait { background: var(--amber-bg); color: var(--amber); }
+  .b-sent { background: var(--green-bg); color: var(--green); }
+  .b-rej { background: var(--red-bg); color: var(--red); }
+  .b-fup { background: #FEE2E2; color: #991B1B; }
+  .sort-icon { font-size: 10px; opacity: 0.7; margin-left: 2px; }
+  .person-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 99px; background: #E8ECF0; color: #2C3E50; }
+  .empty { text-align: center; padding: 40px; color: var(--text-faint); font-size: 13px; }
+  .lock-screen { position: fixed; inset: 0; background: #F7F5F0; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .lock-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 48px; width: 360px; text-align: center; }
+  .lock-logo { font-size: 15px; font-weight: 500; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 8px; }
+  .lock-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+  .lock-input { width: 100%; font-family: "DM Mono", monospace; font-size: 18px; letter-spacing: 0.15em; text-align: center; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); margin-bottom: 12px; }
+  .lock-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .lock-btn { width: 100%; font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 500; padding: 11px; border-radius: var(--radius); background: var(--accent); color: white; border: none; cursor: pointer; }
+  .lock-btn:hover { background: #1a252f; }
+  .lock-error { font-size: 12px; color: var(--red); min-height: 18px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div style="font-size:32px;margin-bottom:16px;">🔒</div>
+    <div class="lock-logo">House Nordic</div>
+    <div class="lock-sub">Samlet oversigt &mdash; Indtast adgangskode</div>
+    <input type="password" class="lock-input" id="lock-input" placeholder="&#9679;&#9679;&#9679;&#9679;" maxlength="20" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <button class="lock-btn" onclick="checkPassword()">Lås op</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<header class="header">
+  <a href="index.html" class="header-logo">House Nordic <span>|</span> Samlet oversigt</a>
+</header>
+
+<div class="main">
+  <div class="stats" id="stats-row"></div>
+  <div class="toolbar">
+    <input type="search" id="search-input" placeholder="Søg..." oninput="renderTable()" />
+    <select class="filter-sel" id="filter-person" onchange="renderTable()">
+      <option value="">Alle sælgere</option>
+      <option>Kristian</option>
+      <option>Laura</option>
+      <option>Johan</option>
+      <option>Nicolai</option>
+      <option>Rasmus</option>
+      <option>Mikkel</option>
+      <option>Hans Henrik</option>
+      <option>Kasper</option>
+    </select>
+    <select class="filter-sel" id="filter-type" onchange="renderTable()">
+      <option value="">Lead & Kunde</option>
+      <option>Lead</option>
+      <option>Kunde</option>
+    </select>
+    <select class="filter-sel" id="filter-status" onchange="renderTable()">
+      <option value="">Alle statusser</option>
+      <option>Afventer svar</option>
+      <option>Tilbud accepteret</option>
+      <option>Opfølgning</option>
+      <option>Afvist</option>
+    </select>
+    <button class="btn" onclick="exportCSV()">CSV</button>
+    <button class="btn btn-primary" onclick="exportExcel()">Excel</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="toggleSort('person')">Sælger<span class="sort-icon" id="sort-person"></span></th>
+          <th onclick="toggleSort('company')">Virksomhed<span class="sort-icon" id="sort-company"></span></th>
+          <th onclick="toggleSort('contact')">Kontaktperson<span class="sort-icon" id="sort-contact"></span></th>
+          <th onclick="toggleSort('title')">Stilling<span class="sort-icon" id="sort-title"></span></th>
+          <th onclick="toggleSort('email')">Email<span class="sort-icon" id="sort-email"></span></th>
+          <th onclick="toggleSort('country')">Land<span class="sort-icon" id="sort-country"></span></th>
+          <th onclick="toggleSort('stores')">Butikker<span class="sort-icon" id="sort-stores"></span></th>
+          <th onclick="toggleSort('revenue')">Omsætning<span class="sort-icon" id="sort-revenue"></span></th>
+          <th onclick="toggleSort('fair')">Messe<span class="sort-icon" id="sort-fair"></span></th>
+          <th onclick="toggleSort('season')">Sæson<span class="sort-icon" id="sort-season"></span></th>
+          <th onclick="toggleSort('offer')">Tilbud sendt<span class="sort-icon" id="sort-offer"></span></th>
+          <th onclick="toggleSort('contacted')">Kontaktet<span class="sort-icon" id="sort-contacted"></span></th>
+          <th onclick="toggleSort('type')">Type<span class="sort-icon" id="sort-type"></span></th>
+          <th onclick="toggleSort('status')">Status<span class="sort-icon" id="sort-status"></span></th>
+        </tr>
+      </thead>
+      <tbody id="leads-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const PASSWORD = "2035";
+const SESSION_KEY = "hn_auth_overview";
+
+const PEOPLE = [{'name': 'Kristian', 'key': 'hn_leads_kristian_v1'}, {'name': 'Laura', 'key': 'hn_leads_laura_v1'}, {'name': 'Johan', 'key': 'hn_leads_johan_v1'}, {'name': 'Nicolai', 'key': 'hn_leads_nicolai_v1'}, {'name': 'Rasmus', 'key': 'hn_leads_rasmus_v1'}, {'name': 'Mikkel', 'key': 'hn_leads_mikkel_v1'}, {'name': 'Hans Henrik', 'key': 'hn_leads_hans_henrik_v1'}, {'name': 'Kasper', 'key': 'hn_leads_kasper_v1'}];
+
+let allLeads = [];
+let sortCol = null;
+let sortDir = "desc";
+
+function checkPassword() {
+  const val = document.getElementById("lock-input").value;
+  if (val === PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, "true");
+    document.getElementById("lock-screen").style.display = "none";
+    loadAllData();
+  } else {
+    document.getElementById("lock-error").textContent = "Forkert adgangskode.";
+    document.getElementById("lock-input").value = "";
+    document.getElementById("lock-input").focus();
+  }
+}
+
+function loadAllData() {
+  allLeads = [];
+  PEOPLE.forEach(p => {
+    const raw = localStorage.getItem(p.key);
+    if (raw) {
+      try {
+        const leads = JSON.parse(raw);
+        leads.forEach(l => allLeads.push({ ...l, person: p.name }));
+      } catch(e) {}
+    }
+  });
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  const t = allLeads.length;
+  const leads_c = allLeads.filter(l => (l.type||"Lead") === "Lead").length;
+  const cust_c = allLeads.filter(l => l.type === "Kunde").length;
+  const p = allLeads.filter(l => l.status === "Afventer svar").length;
+  const f = allLeads.filter(l => l.status === "Opfølgning").length;
+  document.getElementById("stats-row").innerHTML = `
+    <div class="stat"><div class="stat-label">Leads i alt</div><div class="stat-val">${t}</div></div>
+    <div class="stat"><div class="stat-label">Leads</div><div class="stat-val">${leads_c}</div></div>
+    <div class="stat"><div class="stat-label">Kunder</div><div class="stat-val">${cust_c}</div></div>
+    <div class="stat"><div class="stat-label">Afventer svar</div><div class="stat-val">${p}</div></div>
+    <div class="stat"><div class="stat-label">Opfølgning</div><div class="stat-val">${f}</div></div>
+  `;
+}
+
+function parseRev(raw) {
+  if (!raw) return -1;
+  const clean = raw.toString().replace(/~/g,"").replace(/\./g,"").replace(/,/g,".").replace(/[^0-9.]/g,"");
+  const n = parseFloat(clean);
+  return isNaN(n) ? -1 : n;
+}
+
+function formatRevenue(raw) {
+  if (!raw) return "";
+  const n = parseRev(raw);
+  if (isNaN(n) || n < 0) return raw;
+  if (n >= 1000000000) return "~" + (n/1000000000).toFixed(1).replace(/\.0$/,"") + " mia.";
+  if (n >= 1000000) return "~" + (n/1000000).toFixed(1).replace(/\.0$/,"") + " mio.";
+  if (n >= 1000) return "~" + (n/1000).toFixed(0) + " t.";
+  return "~" + n.toFixed(0);
+}
+
+function toggleSort(col) {
+  if (sortCol === col) { sortDir = sortDir === "desc" ? "asc" : "desc"; }
+  else { sortCol = col; sortDir = "desc"; }
+  document.querySelectorAll(".sort-icon").forEach(el => el.textContent = "");
+  const icon = document.getElementById("sort-" + col);
+  if (icon) icon.textContent = sortDir === "desc" ? " ▼" : " ▲";
+  renderTable();
+}
+
+function statusBadge(s) {
+  const map = { "Afventer svar": "b-wait", "Tilbud accepteret": "b-sent", "Opfølgning": "b-fup", "Afvist": "b-rej" };
+  return `<span class="badge ${map[s]||'b-wait'}">${s||""}</span>`;
+}
+
+function filtered() {
+  const q = document.getElementById("search-input").value.toLowerCase();
+  const fp = document.getElementById("filter-person").value;
+  const ft = document.getElementById("filter-type").value;
+  const fs = document.getElementById("filter-status").value;
+  let result = allLeads.filter(l => {
+    const match = !q || [l.company,l.contact,l.email,l.country,l.offer,l.person].some(f=>(f||"").toLowerCase().includes(q));
+    return match && (!fp || l.person === fp) && (!ft || (l.type||"Lead") === ft) && (!fs || l.status === fs);
+  });
+  if (sortCol) {
+    result = result.slice().sort((a,b) => {
+      let av = a[sortCol]||"", bv = b[sortCol]||"";
+      if (sortCol === "revenue" || sortCol === "stores") {
+        av = parseRev(av); bv = parseRev(bv);
+        return sortDir === "desc" ? bv-av : av-bv;
+      }
+      av = av.toString().toLowerCase(); bv = bv.toString().toLowerCase();
+      return sortDir === "desc" ? bv.localeCompare(av,"da") : av.localeCompare(bv,"da");
+    });
+  }
+  return result;
+}
+
+function renderTable() {
+  const rows = filtered();
+  const tbody = document.getElementById("leads-body");
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="14" class="empty">Ingen leads fundet.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = "";
+  rows.forEach(lead => {
+    const tr = document.createElement("tr");
+    const initials = lead.person.split(" ").map(p=>p[0]).join("").toUpperCase();
+    tr.innerHTML = `
+      <td><span class="person-tag">${lead.person}</span></td>
+      <td>${lead.company||""}</td>
+      <td>${lead.contact||""}</td>
+      <td style="color:#7A7570;">${lead.title||""}</td>
+      <td style="color:#7A7570;font-size:11px;">${lead.email||""}</td>
+      <td>${lead.country||""}</td>
+      <td style="text-align:center;">${lead.stores||""}</td>
+      <td style="color:#7A7570;">${formatRevenue(lead.revenue)}</td>
+      <td>${lead.fair||""}</td>
+      <td>${lead.season||""}</td>
+      <td>${lead.offer||""}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#7A7570;">${lead.contacted||""}</td>
+      <td><span class="badge ${(lead.type||'Lead')==='Kunde'?'b-kunde':'b-lead'}">${lead.type||"Lead"}</span></td>
+      <td>${statusBadge(lead.status)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportCSV() {
+  const hdr = ["Sælger","Virksomhed","Kontaktperson","Stilling","Email","Land","Butikker","Omsætning","Messe","Sæson","Tilbud sendt","Kontaktet","Type","Status"];
+  const rows = filtered().map(l => [l.person,l.company,l.contact,l.title||"",l.email,l.country,l.stores,l.revenue,l.fair||"",l.season||"",l.offer,l.contacted,l.type||"Lead",l.status]
+    .map(v => `"${(v||"").replace(/"/g,'""')}"`).join(","));
+  const csv = "\uFEFF" + [hdr.join(","),...rows].join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+  a.download = "HN_Leads_Samlet.csv"; a.click();
+}
+
+function exportExcel() {
+  const hdr = ["Sælger","Virksomhed","Kontaktperson","Stilling","Email","Land","Butikker","Omsætning","Messe","Sæson","Tilbud sendt","Kontaktet","Type","Status"];
+  const rows = filtered().map(l => [l.person,l.company,l.contact,l.title||"",l.email,l.country,l.stores,l.revenue,l.fair||"",l.season||"",l.offer,l.contacted,l.type||"Lead",l.status]);
+  const ws = XLSX.utils.aoa_to_sheet([hdr,...rows]);
+  ws["!cols"] = [14,22,18,14,26,12,10,14,14,10,22,12,10,16].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Samlet");
+  XLSX.writeFile(wb, "HN_Leads_Samlet.xlsx");
+}
+
+if (sessionStorage.getItem(SESSION_KEY) === "true") {
+  document.getElementById("lock-screen").style.display = "none";
+  loadAllData();
+} else {
+  setTimeout(() => document.getElementById("lock-input").focus(), 100);
+}
+</script>
+</body>
+</html>
